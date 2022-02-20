@@ -70,8 +70,8 @@ export default defineConfig({
   webpack5: {},
   exportStatic: {},
   define: {
-    API_URL: 'http://localhost:3000/', // API address
-    API_URL_GOOGLE_CLIENT_ID: '696844855794-0sincdjfrrka7hk4mnqjn9q8oie7p7dh.apps.googleusercontent.com'
-  }
-
+    API_URL: 'https://c10bu1.tk/', // API address
+    API_URL_GOOGLE_CLIENT_ID:
+      '696844855794-0sincdjfrrka7hk4mnqjn9q8oie7p7dh.apps.googleusercontent.com',
+  },
 });
