@@ -71,7 +71,7 @@ export default defineConfig({
   exportStatic: {},
   define: {
     API_URL: 'http://localhost:3000/', // API address
-    API_URL_GOOGLE_AUTH: '629928954849-ur0g50hirbt5o79j8kq8p8ci5f1qgb8a.apps.googleusercontent.com'
+    API_URL_GOOGLE_CLIENT_ID: '629928954849-ur0g50hirbt5o79j8kq8p8ci5f1qgb8a.apps.googleusercontent.com'
   }
 
 });
