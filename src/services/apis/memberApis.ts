@@ -17,7 +17,7 @@ export const memberInfoBySpaceIdAndRole = async (spaceId: number, role: string, 
 }
 
 export const searchMemberInSpace = async (spaceId: number, role: string, currentPage: number, name: string) => {
-    const url = `member-in-space/${spaceId}/member-info/search?role=${role}&page=${currentPage}&limit=7&mn=${name}`;
+    const url = `member-in-space/${spaceId}/member-info/search/r?role=${role}&page=${currentPage}&limit=7&mn=${name}`;
     return await axiosClient.get(url);
 }
 
