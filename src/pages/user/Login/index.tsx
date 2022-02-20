@@ -91,7 +91,7 @@ const Login: React.FC = () => {
             render: (props, dom) =>
               <>
                 <GoogleLogin className={styles.loginBtn}
-                  clientId={API_URL_GOOGLE_AUTH}
+                  clientId={API_URL_GOOGLE_CLIENT_ID}
                   buttonText="Login"
                   onSuccess={responseGoogle}
                   onFailure={responseGoogle}
