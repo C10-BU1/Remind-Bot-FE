@@ -275,9 +275,6 @@ export class NotificationService {
           .innerJoinAndSelect('n.space', 'spaceInfo')
           .select(['spaceInfo.name AS name'])
           .where('n.id = :id', { id: result.id }).execute();
-        const job = this.schedulerRegistry.getCronJob(result.id.toString());
-        job.stop();
-        this.schedulerRegistry.deleteCronJob(result.id.toString());
         if (tags.length != 0) {
           const taggedMember = this.checkTag(notification.content, tags);
           const taggedMemberInDb = await this.taggedMemberService.getTaggedMember(result.id);
