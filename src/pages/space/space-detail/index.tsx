@@ -1,5 +1,5 @@
 import { PageContainer } from "@ant-design/pro-layout";
-import { Card, Descriptions, Row, Col, List, Input, Button, Modal, Radio, Space, Avatar, Skeleton, Divider } from "antd";
+import { Card, Descriptions, Row, Col, List, Input, Button, Modal, Radio, Space, Avatar, Skeleton, Divider, Spin } from "antd";
 import { useEffect, useState } from "react";
 import CreateNotification from "@/components/Notification/CreateNotification/CreateNotification";
 import Member from "@/components/Member/Member";
@@ -24,6 +24,7 @@ export default function SpaceDetail() {
     const { Search } = Input;
     const [currentPageNoti, setCurrentPageNoti] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
+    const [isUpdate, setIsUpdate] = useState(false);
     const [totalNotification, setTotalNotification] = useState(0);
     const [search, setSearch] = useState('');
     const [notificationDetail, setNotificationDetail] = useState<any>(null);
@@ -57,6 +58,8 @@ export default function SpaceDetail() {
             setTotalNotification(totalNotification - 1);
         }
         if (action == 'update') {
+            setIsUpdate(true)
+            setNotificationDetail(null);
             if (type == 'normal') {
                 const res = await getNotification(notificationId);
                 setNotificationDetail(res.data);
@@ -66,6 +69,7 @@ export default function SpaceDetail() {
             }
             setRole('');
             setChoseCate(0);
+            setIsUpdate(false);
         }
         if (action == 'create') {
             const res = await getNotifications(spaceId, currentPageNoti);
@@ -166,8 +170,10 @@ export default function SpaceDetail() {
                         <Col span={18} push={6} className={styles.rightContain}>
                             {choseCate != 0 && <CreateNotification notificationCate={choseCate} spaceId={spaceId} sendData={handleGetDataFromChild} />}
                             {role != '' && <Member role={role} spaceId={spaceId} />}
-                            {notificationDetail != null && notificationDetail.type == 'normal' && <NormalNotificationDetail notification={notificationDetail} spaceId={spaceId} sendData={handleGetDataFromChild} />}
-                            {notificationDetail != null && notificationDetail.type == 'reminder' && <ReminderNotificationDetail notification={notificationDetail} spaceId={spaceId} sendData={handleGetDataFromChild} />}
+                            <Spin className={styles.spinIsUpdate} spinning={isUpdate}>
+                                {notificationDetail != null && notificationDetail.type == 'normal' && <NormalNotificationDetail notification={notificationDetail} spaceId={spaceId} sendData={handleGetDataFromChild} />}
+                                {notificationDetail != null && notificationDetail.type == 'reminder' && <ReminderNotificationDetail notification={notificationDetail} spaceId={spaceId} sendData={handleGetDataFromChild} />}
+                            </Spin>
                         </Col>
                         <Col span={6} pull={18} className={styles.leftContain}>
                             <Search placeholder="Tìm kiếm thông báo" onSearch={onSearch} enterButton className={styles.leftSearch} />
