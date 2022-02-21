@@ -247,7 +247,7 @@ export class NotificationService {
     }
     try {
       await this.taggedMemberService.deleteAllTaggedMember(notificationId);
-      if(notification.type == NotificationType.REMINDER){
+      if (notification.type == NotificationType.REMINDER) {
         await this.receivedMessageService.deleteMessage(notification);
       }
       await this.notificationRepo.delete(notification);
@@ -336,7 +336,15 @@ export class NotificationService {
   }
 
   addCronJobForNormalNotification(spaceName: string, notification: NotificationEntity, members: MemberInfoDto[]) {
-    const job = new CronJob(`0 ${notification.sendAtMinute} ${notification.sendAtHour} ${notification.sendAtDayOfMonth} ${notification.sendAtMonths} ${notification.sendAtDayOfWeek}`, async () => {
+    const utcHour = moment.utc(moment(`${notification.sendAtHour}`, 'k')).format('k');
+    let utcDayOfMonth = '';
+    if (notification.sendAtDayOfMonth == '*') {
+      utcDayOfMonth += '*';
+    } else {
+      utcDayOfMonth += moment.utc(moment(`${notification.sendAtDayOfMonth} ${notification.sendAtHour}`, 'D k')).format('D');
+    }
+    const utcDayOfWeek = this.convertToUtc(notification.sendAtHour, notification.sendAtDayOfWeek);
+    const job = new CronJob(`0 ${notification.sendAtMinute} ${utcHour} ${utcDayOfMonth} ${notification.sendAtMonths} ${utcDayOfWeek}`, async () => {
       const result = await createMessage(notification.content, members, spaceName, notification.threadId);
       if (result == 0) {
         await this.updateNotificationStatus(notification.id, false);
@@ -350,7 +358,9 @@ export class NotificationService {
   }
 
   addCronJobForReminderNotification(spaceName: string, notification: NotificationEntity, members: MemberInfoDto[]) {
-    const job = new CronJob(`0 ${notification.sendAtMinute} ${notification.sendAtHour} * * ${notification.sendAtDayOfWeek}`, async () => {
+    const utcHour = moment.utc(moment(`${notification.sendAtHour}`, 'k')).format('k');
+    const utcDayOfWeek = this.convertToUtc(notification.sendAtHour, notification.sendAtDayOfWeek);
+    const job = new CronJob(`0 ${notification.sendAtMinute} ${utcHour} * * ${utcDayOfWeek}`, async () => {
       const receivedMessages = await this.receivedMessageService.checkMessage(notification);
       let tagMembers: MemberInfoDto[] = [];
       members.forEach((member) => {
@@ -397,5 +407,26 @@ export class NotificationService {
     const year = Math.floor(months / 12) + (months % 12 + createdMonth - 1 > 12 ? 1 : 0) + createdYear;
     const month = months % 12 + createdMonth - 1 > 12 ? 13 - createdMonth + months % 12 : months % 12 + createdMonth - 1;
     return { year: year.toString(), month: month.toString() };
+  }
+
+  convertToUtc(localHour: string, localDayOfWeek: string) {
+    if (localDayOfWeek == '*') {
+      return localDayOfWeek;
+    }
+    let utcDayOfWeek = '';
+    if (parseInt(localHour) - 7 >= 0) {
+      utcDayOfWeek = localDayOfWeek;
+    } else {
+      localDayOfWeek.split(',').forEach((item) => {
+        const day = parseInt(item);
+        if (day == 0) {
+          utcDayOfWeek += `6,`;
+        } else {
+          utcDayOfWeek += `${day - 1},`
+        }
+      })
+    }
+    const result = utcDayOfWeek.substring(0, localDayOfWeek.length);
+    return result;
   }
 }
