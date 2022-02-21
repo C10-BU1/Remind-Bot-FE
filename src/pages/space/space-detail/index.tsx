@@ -115,7 +115,7 @@ export default function SpaceDetail() {
         }
         setCurrentPageNoti(currentPageNoti + 1);
     }
-
+    
     useEffect(() => {
         const notification = async () => {
             const res = await getNotifications(spaceId, currentPageNoti);

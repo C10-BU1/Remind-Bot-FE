@@ -1,12 +1,13 @@
-import styles from './MySpace.less';
 import { PageContainer } from '@ant-design/pro-layout';
 import { Button, Card, Input, Table } from 'antd';
-import { FC, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getSpaces, searchByName } from '@/services/apis/spaceApis';
+import { useHistory } from 'react-router';
+
 
 
 export default function MySpace() {
-
+    const routerHistory = useHistory();
     const { Search } = Input;
     const [data, setData] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -30,10 +31,14 @@ export default function MySpace() {
             title: '',
             dataIndex: 'id',
             key: 'id',
-            render: (text: string) => <a href={`space/${text}/detail`}><Button type="primary">Chi tiết</Button></a>
+            render: (text: string) => <Button onClick={e => handleChooseSpace(e, text)} type="primary">Chi tiết</Button>
         },
 
     ];
+    const handleChooseSpace = (e: any, spaceId: string) => {
+        console.log(spaceId)
+        routerHistory.push(`/space/${spaceId}/detail`);
+    }
     const paginate = {
         pageSize: 10,
         total: totalItems,
