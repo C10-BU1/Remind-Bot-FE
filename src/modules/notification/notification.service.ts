@@ -269,7 +269,7 @@ export class NotificationService {
     delete notification.tags;
     try {
       const result = await this.notificationRepo.save({ ...notificationEntity, ...notification });
-
+      console.log(result)
       if (notification.content) {
         const space = await this.notificationRepo.createQueryBuilder('n')
           .innerJoinAndSelect('n.space', 'spaceInfo')
@@ -278,7 +278,7 @@ export class NotificationService {
         if (tags.length != 0) {
           const taggedMember = this.checkTag(notification.content, tags);
           const taggedMemberInDb = await this.taggedMemberService.getTaggedMember(result.id);
-          for (let member of taggedMember) {      //delete member does not exist in tags
+          for (let member of taggedMember) {
             const findMember = taggedMemberInDb.filter((memberInDb) => {
               return memberInDb.name == member.name;
             })
@@ -314,11 +314,7 @@ export class NotificationService {
         }
       }
       if (notification.sendAtDayOfWeek || notification.sendAtHour || notification.sendAtMinute || notification.sendAtDayOfMonth || notification.sendAtMonths) {
-        const job = this.schedulerRegistry.getCronJob(result.id.toString());
-        job.setTime(new CronTime(`0 ${result.sendAtMinute} ${result.sendAtHour} ${result.sendAtDayOfMonth == null ? '*' : result.sendAtDayOfMonth} ${result.sendAtMonths == null ? '*' : result.sendAtMonths} ${result.sendAtDayOfWeek}`));
-        if (notificationEntity.isEnable) {
-          job.start();
-        }
+        this.updateTimeForCronJob(result);
       }
     } catch (error) {
       console.log(error)
@@ -336,12 +332,12 @@ export class NotificationService {
   }
 
   addCronJobForNormalNotification(spaceName: string, notification: NotificationEntity, members: MemberInfoDto[]) {
-    const utcHour = moment.utc(moment(`${notification.sendAtHour}`, 'k')).format('k');
+    const utcHour = moment(moment(`${notification.sendAtHour}`, 'H')).utcOffset('-0700').format('H');
     let utcDayOfMonth = '';
     if (notification.sendAtDayOfMonth == '*') {
       utcDayOfMonth += '*';
     } else {
-      utcDayOfMonth += moment.utc(moment(`${notification.sendAtDayOfMonth} ${notification.sendAtHour}`, 'D k')).format('D');
+      utcDayOfMonth += moment(moment(`${notification.sendAtDayOfMonth} ${notification.sendAtHour}`, 'D H')).utcOffset('-0700').format('D');
     }
     const utcDayOfWeek = this.convertToUtc(notification.sendAtHour, notification.sendAtDayOfWeek);
     const job = new CronJob(`0 ${notification.sendAtMinute} ${utcHour} ${utcDayOfMonth} ${notification.sendAtMonths} ${utcDayOfWeek}`, async () => {
@@ -358,7 +354,7 @@ export class NotificationService {
   }
 
   addCronJobForReminderNotification(spaceName: string, notification: NotificationEntity, members: MemberInfoDto[]) {
-    const utcHour = moment.utc(moment(`${notification.sendAtHour}`, 'k')).format('k');
+    const utcHour = moment(moment(`${notification.sendAtHour}`, 'H')).utcOffset('-0700').format('H');
     const utcDayOfWeek = this.convertToUtc(notification.sendAtHour, notification.sendAtDayOfWeek);
     const job = new CronJob(`0 ${notification.sendAtMinute} ${utcHour} * * ${utcDayOfWeek}`, async () => {
       const receivedMessages = await this.receivedMessageService.checkMessage(notification);
@@ -396,7 +392,7 @@ export class NotificationService {
 
   checkTag(content: string, tags: MemberInfoDto[]) {
     const taggedMembers = tags.filter((tag) => {
-      return content.includes(`@${tag.displayName}`);
+      return content.includes(`@${tag.displayName} `);
     });
     return taggedMembers;
   }
@@ -428,5 +424,25 @@ export class NotificationService {
     }
     const result = utcDayOfWeek.substring(0, localDayOfWeek.length);
     return result;
+  }
+
+  updateTimeForCronJob(notification: NotificationEntity) {
+    const job = this.schedulerRegistry.getCronJob(notification.id.toString());
+    const utcHour = moment(moment(`${notification.sendAtHour}`, 'H')).utcOffset('-0700').format('H');
+    const utcDayOfWeek = this.convertToUtc(notification.sendAtHour, notification.sendAtDayOfWeek);
+    if (notification.type == NotificationType.NORMAL) {
+      let utcDayOfMonth = '';
+      if (notification.sendAtDayOfMonth == '*') {
+        utcDayOfMonth += '*';
+      } else {
+        utcDayOfMonth += moment(moment(`${notification.sendAtDayOfMonth} ${notification.sendAtHour}`, 'D H')).utcOffset('-0700').format('D');
+      }
+      job.setTime(new CronTime(`0 ${notification.sendAtMinute} ${utcHour} ${utcDayOfMonth} ${notification.sendAtMonths} ${utcDayOfWeek}`));
+    } else {
+      job.setTime(new CronTime(`0 ${notification.sendAtMinute} ${utcHour} * * ${utcDayOfWeek}`));
+    }
+    if (notification.isEnable) {
+      job.start();
+    }
   }
 }
