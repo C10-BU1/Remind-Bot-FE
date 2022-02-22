@@ -97,11 +97,11 @@ export default function ReminderNotificationDetail({ notification, spaceId, send
                         if (notification.keyWord != values.keyWord) {
                             data.keyWord = values.keyWord;
                         }
-                        if (notification.fromTime != values.fromTime) {
-                            data.fromTime = values.fromTime;
+                        if (notification.fromTime != values.scanTime[0]) {
+                            data.fromTime = values.scanTime[0];
                         }
-                        if (notification.toTime != values.toTime) {
-                            data.toTime = values.toTime;
+                        if (notification.toTime != values.scanTime[1]) {
+                            data.toTime = values.scanTime[1];
                         }
                         if (JSON.stringify(notification.dayOfWeek) != JSON.stringify(values.dayOfWeek)) {
                             let dayOfWeek = '';
@@ -115,6 +115,7 @@ export default function ReminderNotificationDetail({ notification, spaceId, send
 
                         data.tags = taggedMember;
                         Object.keys(data).forEach(key => data[key] === undefined ? delete data[key] : {});
+                        console.log(data)
                         try {
                             await updateNotification(data);
                             sendData(notification.id, 'update', notification.type);

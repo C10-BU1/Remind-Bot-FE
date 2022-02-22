@@ -45,7 +45,7 @@ export default [
   },
   {
     path: '/space/:spaceId/detail',
-    component: './space/space-detail'
+    component: './space/space-detail',
   },
   {
     path: '/',
