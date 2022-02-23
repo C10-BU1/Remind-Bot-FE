@@ -13,7 +13,7 @@ export class NotificationEntity {
     @Column({ type: 'varchar', nullable: false })
     name: string;
 
-    @Column({ type: 'nvarchar', nullable: false })
+    @Column({ type: 'text', nullable: false })
     content: string;
 
     @Column({ name: 'thread_id', type: 'varchar', nullable: true })
