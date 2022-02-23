@@ -1,6 +1,5 @@
-import { BadRequestException, ConflictException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import { ConflictException, forwardRef, Inject, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import e from 'express';
 import { Repository } from 'typeorm';
 import { MemberService } from '../member/member.service';
 import { SpaceService } from '../space/space.service';
@@ -8,7 +7,6 @@ import { TaggedMemberService } from '../tagged-member/tagged-member.service';
 import { NotificationEntity } from './notification.entity';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob, CronTime } from 'cron';
-import { MemberEntity } from '../member/member.entity';
 import { createMessage, getMessage, createMessageForReminderNotification } from 'src/google-chat-apis/google-chat-apis';
 import { NotificationDto } from './dto/notification.dto';
 import { paginateResponse } from 'src/common/paginate/paginate';
@@ -75,7 +73,7 @@ export class NotificationService {
     notificationEntity.threadId = notification.threadId;
     notificationEntity.space = space;
     notificationEntity.member = createdBy;
-    notificationEntity.createdAt = new Date();
+    notificationEntity.createdAt = moment(new Date()).utcOffset('+0700').toDate();
     notificationEntity.type = NotificationType.NORMAL;
     try {
       const result = await this.notificationRepo.save(notificationEntity);
@@ -117,7 +115,7 @@ export class NotificationService {
     notificationEntity.threadId = notification.threadId;
     notificationEntity.space = space;
     notificationEntity.member = createdBy;
-    notificationEntity.createdAt = new Date();
+    notificationEntity.createdAt = moment(new Date()).utcOffset('+0700').toDate();
     notificationEntity.keyWord = notification.keyWord;
     notificationEntity.type = NotificationType.REMINDER;
     try {
@@ -251,11 +249,9 @@ export class NotificationService {
         await this.receivedMessageService.deleteMessage(notification);
       }
       await this.notificationRepo.delete(notification);
-      if (notification.isEnable) {
-        const job = this.schedulerRegistry.getCronJob(notificationId.toString());
-        job.stop();
-        this.schedulerRegistry.deleteCronJob(notificationId.toString());
-      }
+      const job = this.schedulerRegistry.getCronJob(notificationId.toString());
+      job.stop();
+      this.schedulerRegistry.deleteCronJob(notificationId.toString());
       return { notificationId: notificationId }
     } catch (error) {
       throw new InternalServerErrorException(`Database connection error: ${error}`);
@@ -269,7 +265,9 @@ export class NotificationService {
     delete notification.tags;
     try {
       const result = await this.notificationRepo.save({ ...notificationEntity, ...notification });
-      console.log(result)
+      if (notification.sendAtDayOfWeek || notification.sendAtHour || notification.sendAtMinute || notification.sendAtDayOfMonth || notification.sendAtMonths) {
+        this.updateTimeForCronJob(result);
+      }
       if (notification.content) {
         const space = await this.notificationRepo.createQueryBuilder('n')
           .innerJoinAndSelect('n.space', 'spaceInfo')
@@ -306,6 +304,9 @@ export class NotificationService {
               }
             }
           }
+          const job = this.schedulerRegistry.getCronJob(result.id.toString());
+          job.stop();
+          this.schedulerRegistry.deleteCronJob(result.id.toString());
           if (result.type == NotificationType.NORMAL) {
             this.addCronJobForNormalNotification(space[0].name, result, taggedMember);
           } else {
@@ -313,11 +314,7 @@ export class NotificationService {
           }
         }
       }
-      if (notification.sendAtDayOfWeek || notification.sendAtHour || notification.sendAtMinute || notification.sendAtDayOfMonth || notification.sendAtMonths) {
-        this.updateTimeForCronJob(result);
-      }
     } catch (error) {
-      console.log(error)
       throw new InternalServerErrorException(`Database connection error: ${error}`)
     }
   }

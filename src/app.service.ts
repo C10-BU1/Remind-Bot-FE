@@ -11,6 +11,7 @@ import { TaggedMemberService } from './modules/tagged-member/tagged-member.servi
 import { NotificationType } from './common/notification-type/notification-type';
 import { ReceivedMessageService } from './modules/received-message/received-message.service';
 import { MemberInfoDto } from './modules/member/dto/member-info.dto';
+import console from 'console';
 
 config()
 @Injectable()
@@ -80,14 +81,13 @@ export class AppService implements OnModuleInit {
         const newMember = await this.memberService.addMember(data.user.email, data.user.displayName, data.user.avatarUrl, null, data.user.name);
         await this.memberInSpaceService.addMemberToSpace(space, newMember, MemberRole.MEMBER);
       } else {
-        if (member.email == null || member.imageUrl == null){
-          const memberInfo = new MemberInfoDto();
-          memberInfo.email = data.user.email;
-          memberInfo.imageUrl = data.user.avatarUrl;
-          await this.memberService.updateMember(memberInfo, member);
-          return { text: `<${data.user.name}> cập nhật thành công` };
-        }
+        const memberInfo = new MemberInfoDto(); 
+        memberInfo.email = data.user.email;
+        memberInfo.imageUrl = data.user.avatarUrl;
+        memberInfo.displayName = data.user.displayName;
+        await this.memberService.updateMember(memberInfo, member);
       }
+      return { text: `<${data.user.name}> cập nhật thành công` };
     }
     else if (message == 'thread') {
       return { text: `ThreadID của thread này là: ${data.message.thread.name}` };

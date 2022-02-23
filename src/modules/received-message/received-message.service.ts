@@ -21,7 +21,7 @@ export class ReceivedMessageService {
         receivedMessageEntity.member = member;
         receivedMessageEntity.messageName = messageName;
         receivedMessageEntity.notification = notification;
-        receivedMessageEntity.receivedAt = new Date;
+        receivedMessageEntity.receivedAt = moment(new Date()).utcOffset('+0700').toDate();
         receivedMessageEntity.threadId = notification.threadId;
         try {
             const result = await this.receivedMessageRepo.save(receivedMessageEntity);
@@ -36,7 +36,7 @@ export class ReceivedMessageService {
                 .where('notificationId = :notificationId', { notificationId: notification.id })
                 .andWhere('memberId = :memberId', { memberId: member.id })
                 .orderBy('received_at', 'DESC').take(1).getOne();
-            if (result == null || moment(result.receivedAt).format('DD-MM-YYYY') != moment(date).format('DD-MM-YYYY')) {
+            if (result == null || moment(result.receivedAt).format('DD-MM-YYYY') != moment(date).utcOffset('+0700').format('DD-MM-YYYY')) {
                 return null;
             }
             return result;
@@ -64,7 +64,7 @@ export class ReceivedMessageService {
     }
 
     async checkMessage(notification: NotificationEntity): Promise<ReceivedMessageDto[]> {
-        const currentDate = moment(new Date()).format('YYYY-MM-DD');
+        const currentDate = moment(new Date()).utcOffset('+0700').format('YYYY-MM-DD');
         const fromTime = moment(`${currentDate} ${notification.fromTime}:00`).toDate();
         const toTime = moment(`${currentDate} ${notification.toTime}:00`).toDate();
         try {

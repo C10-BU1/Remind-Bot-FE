@@ -12,7 +12,6 @@ export class AppController {
   @Post('bot')
   @ApiOperation({ summary: 'This API will handle the event from spaces' })
   handleEvents(@Request() req){
-    console.log(req.body)
     return this.appService.handleEvents(req.body);
   }
 }
