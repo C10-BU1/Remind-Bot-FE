@@ -259,6 +259,7 @@ export class NotificationService {
   }
 
   async updateNotification(notification: UpdateNotification) {
+    console.log(notification)
     const notificationEntity = await this.getNotification(notification.id);
     const tags = notification.tags;
     delete notification.id;
@@ -268,14 +269,17 @@ export class NotificationService {
       if (notification.sendAtDayOfWeek || notification.sendAtHour || notification.sendAtMinute || notification.sendAtDayOfMonth || notification.sendAtMonths) {
         this.updateTimeForCronJob(result);
       }
-      if (notification.content) {
+      if (notification.content || notification.threadId || notification.fromTime || notification.toTime || notification.keyWord) {
         const space = await this.notificationRepo.createQueryBuilder('n')
           .innerJoinAndSelect('n.space', 'spaceInfo')
           .select(['spaceInfo.name AS name'])
           .where('n.id = :id', { id: result.id }).execute();
-        if (tags.length != 0) {
+        const taggedMemberInDb = await this.taggedMemberService.getTaggedMember(result.id);
+        const job = this.schedulerRegistry.getCronJob(result.id.toString());
+        job.stop();
+        this.schedulerRegistry.deleteCronJob(result.id.toString());
+        if (tags.length != 0 && notification.content) {
           const taggedMember = this.checkTag(notification.content, tags);
-          const taggedMemberInDb = await this.taggedMemberService.getTaggedMember(result.id);
           for (let member of taggedMember) {
             const findMember = taggedMemberInDb.filter((memberInDb) => {
               return memberInDb.name == member.name;
@@ -287,7 +291,6 @@ export class NotificationService {
               } else {
                 await this.taggedMemberService.add(result);
               }
-
             }
           }
           for (let member of taggedMemberInDb) {  //add new tagged member
@@ -298,23 +301,27 @@ export class NotificationService {
               if (member.name != 'all') {
                 const memberEntity = await this.memberService.findByName(member.name);
                 await this.taggedMemberService.deleteTaggedMember(result.id, memberEntity.id);
-
               } else {
                 await this.taggedMemberService.deleteTaggedMember(result.id, null);
               }
             }
           }
-          const job = this.schedulerRegistry.getCronJob(result.id.toString());
-          job.stop();
-          this.schedulerRegistry.deleteCronJob(result.id.toString());
           if (result.type == NotificationType.NORMAL) {
             this.addCronJobForNormalNotification(space[0].name, result, taggedMember);
           } else {
             this.addCronJobForReminderNotification(space[0].name, result, taggedMember);
           }
+        } else {
+          console.log(212312);
+          if (result.type == NotificationType.NORMAL) {
+            this.addCronJobForNormalNotification(space[0].name, result, taggedMemberInDb);
+          } else {
+            this.addCronJobForReminderNotification(space[0].name, result, taggedMemberInDb);
+          }
         }
       }
     } catch (error) {
+      console.log(error)
       throw new InternalServerErrorException(`Database connection error: ${error}`)
     }
   }
@@ -389,7 +396,7 @@ export class NotificationService {
 
   checkTag(content: string, tags: MemberInfoDto[]) {
     const taggedMembers = tags.filter((tag) => {
-      return content.includes(`@${tag.displayName} `);
+      return content.includes(`@${tag.displayName}`);
     });
     return taggedMembers;
   }

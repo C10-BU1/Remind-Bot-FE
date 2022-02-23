@@ -4,7 +4,7 @@ import axios from 'axios'
 import { InternalServerErrorException, Logger } from '@nestjs/common';
 import { MemberEntity } from 'src/modules/member/member.entity';
 import { MemberInfoDto } from 'src/modules/member/dto/member-info.dto';
-
+import * as moment from 'moment';
 config();
 
 const getJWT = async () => {
@@ -16,6 +16,7 @@ const getJWT = async () => {
     );
     try {
         const token = await jwtClient.authorize();
+        console.log(token)
         return token.access_token;
     } catch (error) {
         return 0;
@@ -69,7 +70,8 @@ export const getMessage = async (messageName: string) => {
 }
 
 export const createMessage = async (message: string, members: MemberInfoDto[], spaceName: string, threadId: string) => {
-    let messageWithTag = message;
+    const date = moment(new Date()).utcOffset('+0700').format('DD-MM');
+    let messageWithTag = message.replace('{date}', date);
     for (let member of members) {
         if(member.name == 'all'){
             messageWithTag = messageWithTag.replace('@all','<users/all>')
