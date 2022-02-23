@@ -183,7 +183,8 @@ export default function CreateNotification({ notificationCate, spaceId, sendData
                                 placeholder="Nội dung của thông báo"
                             >
                                 <Mentions
-                                    style={{ width: '100%', height: 100 }}
+                                    style={{ width: '400', height: 100 }}
+                                    rows={4}
                                     loading={isLoading}
                                     onChange={onChange}
                                     onSelect={onSelect}

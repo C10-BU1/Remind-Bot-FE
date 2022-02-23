@@ -115,7 +115,7 @@ export default function SpaceDetail() {
         }
         setCurrentPageNoti(currentPageNoti + 1);
     }
-    
+
     useEffect(() => {
         const notification = async () => {
             const res = await getNotifications(spaceId, currentPageNoti);
@@ -146,7 +146,7 @@ export default function SpaceDetail() {
                     title: `${spaceDetail?.displayName}`,
                 }}
                 content={
-                    <Descriptions column={4} style={{ marginBottom: -16 }}>
+                    <Descriptions column={5} style={{ marginBottom: -16 }}>
                         <Descriptions.Item label="Owner">
                             <a onClick={ownerModal}>{spaceDetail?.owner?.displayName}</a>
                         </Descriptions.Item>
@@ -156,8 +156,11 @@ export default function SpaceDetail() {
                         <Descriptions.Item label="Thành viên">
                             <a onClick={(e) => { setRole('member'); setChoseCate(0); setNotificationDetail(null) }}>{spaceDetail?.member}</a>
                         </Descriptions.Item>
+                        <Descriptions.Item >
+                            <Button type="primary" className={styles.addAdminBtn} onClick={(e) => { setRole('member'); setChoseCate(0); setNotificationDetail(null) }}>Thêm admin</Button>
+                        </Descriptions.Item>
                         <Descriptions.Item>
-                            <Button className={styles.spaceDetailBtn} onClick={showModal}>
+                            <Button type="primary" className={styles.spaceDetailBtn} onClick={showModal}>
                                 Tạo thông báo
                             </Button>
                         </Descriptions.Item>

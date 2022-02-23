@@ -71,6 +71,7 @@ export default function ReminderNotificationDetail({ notification, spaceId, send
                         setIsLoading(true);
                         if (content == '') {
                             message.warning('Nội dung không được để trống');
+                            setIsLoading(false);
                             return;
                         }
                         const time = moment(values.time, 'hh:mm:ss');
@@ -151,7 +152,6 @@ export default function ReminderNotificationDetail({ notification, spaceId, send
                             <ProForm.Item
                                 name="content"
                                 label="Nội dung"
-
                             >
                                 <Mentions
                                     style={{ width: '400', height: 100 }}

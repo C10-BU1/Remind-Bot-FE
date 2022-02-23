@@ -82,6 +82,7 @@ export default function NormalNotificationDetail({ notification, spaceId, sendDa
                         setIsLoading(true);
                         if (content == '') {
                             message.warning('Nội dung không được để trống');
+                            setIsLoading(false);
                             return;
                         }
                         const time = moment(values.time, 'hh:mm:ss');
@@ -180,7 +181,6 @@ export default function NormalNotificationDetail({ notification, spaceId, sendDa
                                     onChange={onChange}
                                     onSelect={onSelect}
                                     onSearch={onSearchMember}
-
                                     defaultValue={notification.content}
                                 >
                                     <Option key='all' value='all' >all</Option>
