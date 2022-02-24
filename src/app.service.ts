@@ -2,7 +2,7 @@ import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { config } from 'dotenv';
 import { MemberService } from './modules/member/member.service';
 import { SpaceService } from './modules/space/space.service';
-import { getMembersInSpace } from 'src/google-chat-apis/google-chat-apis';
+import { getMembersInSpace, simsimiApi } from 'src/google-chat-apis/google-chat-apis';
 import { MemberInSpaceService } from './modules/member-in-space/member-in-space.service';
 import { SpaceEntity } from './modules/space/space.entity';
 import { MemberRole } from 'src/common/member-role/member-role';
@@ -103,6 +103,10 @@ export class AppService implements OnModuleInit {
         } else {
           await this.receivedMessageService.updateMessageName(receivedMessageEntity, data.message.name);
         }
+      }
+      else{
+        const resMessage = await simsimiApi(message);
+        return { text: `<${data.user.name}> ${resMessage}` };
       }
     }
   }
