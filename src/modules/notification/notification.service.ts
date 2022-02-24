@@ -259,7 +259,6 @@ export class NotificationService {
   }
 
   async updateNotification(notification: UpdateNotification) {
-    console.log(notification)
     const notificationEntity = await this.getNotification(notification.id);
     const tags = notification.tags;
     delete notification.id;
@@ -312,7 +311,6 @@ export class NotificationService {
             this.addCronJobForReminderNotification(space[0].name, result, taggedMember);
           }
         } else {
-          console.log(212312);
           if (result.type == NotificationType.NORMAL) {
             this.addCronJobForNormalNotification(space[0].name, result, taggedMemberInDb);
           } else {

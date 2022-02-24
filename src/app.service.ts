@@ -1,8 +1,9 @@
 import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { config } from 'dotenv';
+import axios from 'axios';
 import { MemberService } from './modules/member/member.service';
 import { SpaceService } from './modules/space/space.service';
-import { getMembersInSpace } from 'src/google-chat-apis/google-chat-apis';
+import { getMembersInSpace, simsimiApi } from 'src/google-chat-apis/google-chat-apis';
 import { MemberInSpaceService } from './modules/member-in-space/member-in-space.service';
 import { SpaceEntity } from './modules/space/space.entity';
 import { MemberRole } from 'src/common/member-role/member-role';
@@ -11,7 +12,6 @@ import { TaggedMemberService } from './modules/tagged-member/tagged-member.servi
 import { NotificationType } from './common/notification-type/notification-type';
 import { ReceivedMessageService } from './modules/received-message/received-message.service';
 import { MemberInfoDto } from './modules/member/dto/member-info.dto';
-import console from 'console';
 
 config()
 @Injectable()
@@ -103,6 +103,26 @@ export class AppService implements OnModuleInit {
         } else {
           await this.receivedMessageService.updateMessageName(receivedMessageEntity, data.message.name);
         }
+      }
+      else{
+        let url = `https://api-sv2.simsimi.net/v2/?text=${message}&lc=vn&cf=false`;
+        let a = await axios.get(encodeURI(url))
+          .then(function (response) {
+            console.log("-------return----------");
+            console.log(response.data.success);
+            console.log("---------end return--------");
+
+            return { text: `<${data.user.name}> ${response.data.success}` };
+          })
+          .catch(function (error) {
+            console.log("------------" + error + "-----------error-");
+          }
+        );
+
+        return a;
+
+        
+
       }
     }
   }

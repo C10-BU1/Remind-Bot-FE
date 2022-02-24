@@ -73,15 +73,15 @@ export const createMessage = async (message: string, members: MemberInfoDto[], s
     const date = moment(new Date()).utcOffset('+0700').format('DD-MM');
     let messageWithTag = message.replace('{date}', date);
     for (let member of members) {
-        if(member.name == 'all'){
-            messageWithTag = messageWithTag.replace('@all','<users/all>')
+        if (member.name == 'all') {
+            messageWithTag = messageWithTag.replace('@all', '<users/all>')
         }
         messageWithTag = messageWithTag.replace(`@${member.displayName}`, `<${member.name}>`);
     }
     const data = {
         text: messageWithTag,
         thread: {
-            name: threadId
+            name: threadId == '' ? null : threadId
         }
     }
     try {
@@ -102,7 +102,7 @@ export const createMessageForReminderNotification = async (message: string, memb
     for (let member of members) {
         messageWithTag = messageWithTag.replace(`@${member.displayName}`, `<${member.name}>`);
     }
-    for(let member of allTaggedMember){
+    for (let member of allTaggedMember) {
         messageWithTag = messageWithTag.replace(`@${member.displayName}`, ``);
     }
     const data = {
@@ -122,6 +122,21 @@ export const createMessageForReminderNotification = async (message: string, memb
     } catch (error) {
         return 0;
     }
+}
+
+export const simsimiApi = async (text: string): Promise<string> =>{
+    try {
+        const res = await axios.get(`https://simsimi.info/api/?text=${text}&lc=vn`);
+
+        console.log("-----------------");
+        console.log(res.data.success)
+        console.log("---------end res--------");
+        
+        return res.data.success;
+    } catch (error) {
+        return text;
+    }
+
 }
 
 
