@@ -3,7 +3,7 @@ module.exports = {
     name: 'serve-data-prod',
     script: './dist/main.js',
     cwd: __dirname,
-    instances: 2, // default 1
+    instances: 1, // default 1
     autorestart: true,
     exec_mode: 'cluster', // allow scale up app
     env: {
