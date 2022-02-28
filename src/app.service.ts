@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { config } from 'dotenv';
+import axios from 'axios';
 import { MemberService } from './modules/member/member.service';
 import { SpaceService } from './modules/space/space.service';
 import { getMembersInSpace, simsimiApi } from 'src/google-chat-apis/google-chat-apis';
@@ -14,6 +15,7 @@ import { MemberInfoDto } from './modules/member/dto/member-info.dto';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { CronJob, CronTime } from 'cron';
 import * as moment from 'moment';
+
 config()
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -98,8 +100,24 @@ export class AppService implements OnModuleInit {
         }
       }
       else{
-        const resMessage = await simsimiApi(message);
-        return { text: `<${data.user.name}> ${resMessage}` };
+        let url = `https://api-sv2.simsimi.net/v2/?text=${message}&lc=vn&cf=false`;
+        let a = await axios.get(encodeURI(url))
+          .then(function (response) {
+            console.log("-------return----------");
+            console.log(response.data.success);
+            console.log("---------end return--------");
+
+            return { text: `<${data.user.name}> ${response.data.success}` };
+          })
+          .catch(function (error) {
+            console.log("------------" + error + "-----------error-");
+          }
+        );
+
+        return a;
+
+        
+
       }
     }
   }

@@ -128,6 +128,10 @@ export const simsimiApi = async (text: string): Promise<string> =>{
     try {
         const res = await axios.get(`https://simsimi.info/api/?text=${text}&lc=vn`);
 
+        console.log("-----------------");
+        console.log(res.data.success)
+        console.log("---------end res--------");
+        
         return res.data.success;
     } catch (error) {
         return text;
