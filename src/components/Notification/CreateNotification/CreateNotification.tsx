@@ -14,7 +14,7 @@ import moment from 'moment';
 import { listMember } from '@/services/apis/memberApis';
 import { createNormalNotification, createReminderNotification } from '@/services/apis/notificationApis';
 import { searchMemberByDisplayName } from '@/services/apis/memberApis';
-import { Console } from 'console';
+
 
 const { Option } = Mentions;
 export default function CreateNotification({ notificationCate, spaceId, sendData }: any) {
@@ -24,10 +24,7 @@ export default function CreateNotification({ notificationCate, spaceId, sendData
     const [dayOfMonthCate, setDayOfMonthCate] = useState("none");
     const [members, setMembers] = useState([{ displayName: 'Tất cả', name: 'Tất cả' }]);
     const [hour, setHour] = useState('');
-    const [minute, setMinute] = useState('');
     const [day, setDay] = useState('');
-    const [month, setMonth] = useState('');
-    const [year, setYear] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const formRef = useRef<ProFormInstance>();
     const [searchMembers, setSearchMember] = useState([]);
@@ -87,11 +84,8 @@ export default function CreateNotification({ notificationCate, spaceId, sendData
                                 content: content,
                                 tags: tags,
                                 dayOfWeek: dayOfWeek,
-                                minute: minute,
                                 hour: hour,
                                 dayOfMonth: day,
-                                month: month,
-                                year: year,
                                 threadId: values.threadId,
                                 spaceId: spaceId
                             }
@@ -210,13 +204,9 @@ export default function CreateNotification({ notificationCate, spaceId, sendData
                             title="Thời gian"
                             onFinish={async () => {
                                 const value = formRef.current?.getFieldsValue();
-                                setHour(moment(value.time).format('k'));
-                                setMinute(moment(value.time).format('m'));
+                                setHour(moment(value.time).format('HH:mm'));
                                 if (dayOfMonthCate == "block") {
-                                    setDay(moment(value.dayOfMonth).format('D'));
-                                    setMonth(moment(value.dayOfMonth).format('M'));
-                                    setYear(moment(value.dayOfMonth).format('YYYY'));
-
+                                    setDay(moment(value.dayOfMonth).format('DD-MM-YYYY'));
                                 }
                                 return true;
                             }}
@@ -275,8 +265,6 @@ export default function CreateNotification({ notificationCate, spaceId, sendData
                             title="Tùy chọn"
                             onFinish={async () => {
                                 const value = formRef.current?.getFieldsValue();
-
-
                                 return true;
                             }}
                         >
@@ -309,7 +297,6 @@ export default function CreateNotification({ notificationCate, spaceId, sendData
                                 keyWord: values.keyWord,
                                 fromTime: values.scanTime[0],
                                 toTime: values.scanTime[1],
-                                minute: minute,
                                 hour: hour,
                                 threadId: values.threadId,
                                 spaceId: spaceId
@@ -438,8 +425,7 @@ export default function CreateNotification({ notificationCate, spaceId, sendData
                             title="Thời gian"
                             onFinish={async () => {
                                 const value = formRef.current?.getFieldsValue();
-                                setHour(moment(value.time).format('k'));
-                                setMinute(moment(value.time).format('m'));
+                                setHour(moment(value.time).format('HH:mm'));
                                 return true;
                             }}
                         >

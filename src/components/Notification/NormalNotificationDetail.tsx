@@ -85,10 +85,7 @@ export default function NormalNotificationDetail({ notification, spaceId, sendDa
                             setIsLoading(false);
                             return;
                         }
-                        const time = moment(values.time, 'hh:mm:ss');
-                        let hour = moment(time).format('k');
-                        let minute = moment(time).format('m');
-
+                        let hour = moment(moment(values.time, 'HH:mm:ss')).format('HH:mm');
                         const data = new UpdateNotification();
                         data.id = notification.id;
                         if (notification.content != content) {
@@ -103,36 +100,24 @@ export default function NormalNotificationDetail({ notification, spaceId, sendDa
                         if (notification.hour != hour) {
                             data.sendAtHour = hour;
                         }
-                        if (notification.minute != minute) {
-                            data.sendAtMinute = minute;
-                        }
                         if (radioValue == 1 && JSON.stringify(notification.dayOfWeek) != JSON.stringify(values.dayOfWeek)) {
                             let dayOfWeek = '';
                             values.dayOfWeek.forEach((value: any) => dayOfWeek += `${value},`);
                             data.sendAtDayOfWeek = dayOfWeek.substring(0, dayOfWeek.length - 1);
                             if (notification.dayOfWeek.length == 0) {
-                                data.sendAtDayOfMonth = '*';
-                                data.sendAtMonths = '*';
+                                data.sendAtDayOfMonth = '';
                             }
                         }
                         if (radioValue == 2) {
-                            const fieldDayOfMonth = moment(values.dayOfMonth, 'DD-MM-YYYY');
-                            const dayOfMonth = moment(fieldDayOfMonth).format('D');
-                            const month = moment(fieldDayOfMonth).format('M');
-                            const year = moment(fieldDayOfMonth).format('YYYY');
-                            if (dayOfMonth != notification.dayOfMonth || month != notification.month || year != notification.year) {
-                                const d = new Date();
-                                const currentYear = d.getFullYear();
-                                const currentMonth = d.getMonth();
+                            const dayOfMonth = moment(moment(values.dayOfMonth, 'DD-MM-YYYY')).format('DD-MM-YYYY');
+                            if (dayOfMonth != notification.dayOfMonth) {
                                 data.sendAtDayOfMonth = dayOfMonth;
-                                data.sendAtMonths = ((parseInt(year) - currentYear) * 12 - currentMonth + parseInt(month)).toString();
                                 data.createdAt = new Date();
                                 if (notification.dayOfMonth == '') {
-                                    data.sendAtDayOfWeek = '*';
+                                    data.sendAtDayOfWeek = '';
                                 }
                             }
                         }
-
                         data.tags = taggedMember;
                         Object.keys(data).forEach(key => data[key] === undefined ? delete data[key] : {});
                         try {
@@ -203,7 +188,7 @@ export default function NormalNotificationDetail({ notification, spaceId, sendDa
                                 name="time"
                                 width="sm"
                                 label="Thời gian gửi"
-                                initialValue={moment(`${notification.hour}:${notification.minute}`, "hh:mm")}
+                                initialValue={moment(`${notification.hour}`, "HH:mm")}
                                 rules={[{ required: true }]}
                             />
                         </Col>

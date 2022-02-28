@@ -73,11 +73,8 @@ export default function ReminderNotificationDetail({ notification, spaceId, send
                             message.warning('Nội dung không được để trống');
                             setIsLoading(false);
                             return;
-                        }
-                        const time = moment(values.time, 'hh:mm:ss');
-                        let hour = moment(time).format('k');
-                        let minute = moment(time).format('m');
-
+                        }            
+                        let hour = moment(moment(values.time, 'HH:mm:ss')).format('HH:mm');
                         const data = new UpdateNotification();
                         data.id = notification.id;
                         if (notification.content != content) {
@@ -91,9 +88,6 @@ export default function ReminderNotificationDetail({ notification, spaceId, send
                         }
                         if (notification.hour != hour) {
                             data.sendAtHour = hour;
-                        }
-                        if (notification.minute != minute) {
-                            data.sendAtMinute = minute;
                         }
                         if (notification.keyWord != values.keyWord) {
                             data.keyWord = values.keyWord;
@@ -116,7 +110,6 @@ export default function ReminderNotificationDetail({ notification, spaceId, send
 
                         data.tags = taggedMember;
                         Object.keys(data).forEach(key => data[key] === undefined ? delete data[key] : {});
-                        console.log(data)
                         try {
                             await updateNotification(data);
                             sendData(notification.id, 'update', notification.type);
@@ -181,14 +174,14 @@ export default function ReminderNotificationDetail({ notification, spaceId, send
                                 name="time"
                                 width="sm"
                                 label="Thời gian gửi"
-                                initialValue={moment(`${notification.hour}:${notification.minute}`, "hh:mm")}
+                                initialValue={moment(`${notification.hour}`, "HH:mm")}
                                 rules={[{ required: true }]}
                             />
                             <ProFormTimePicker.RangePicker
                                 name="scanTime"
                                 label="Thời gian scan"
                                 width="sm"
-                                initialValue={[moment(`${notification.fromTime}`, "hh:mm"), moment(`${notification.toTime}`, "hh:mm")]}
+                                initialValue={[moment(`${notification.fromTime}`, "HH:mm"), moment(`${notification.toTime}`, "HH:mm")]}
                                 fieldProps={{
                                     format: 'HH:mm',
                                 }}
@@ -224,6 +217,7 @@ export default function ReminderNotificationDetail({ notification, spaceId, send
                                 width="md"
                                 placeholder="ThreadID"
                                 initialValue={notification.threadId}
+                                rules={[{ required: true }]}
                             />
                         </Col>
                     </Row>
