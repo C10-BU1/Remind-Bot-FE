@@ -5,6 +5,7 @@ import { InternalServerErrorException, Logger } from '@nestjs/common';
 import { MemberEntity } from 'src/modules/member/member.entity';
 import { MemberInfoDto } from 'src/modules/member/dto/member-info.dto';
 import * as moment from 'moment';
+import { NotificationEntity } from 'src/modules/notification/notification.entity';
 config();
 
 const getJWT = async () => {
@@ -16,7 +17,6 @@ const getJWT = async () => {
     );
     try {
         const token = await jwtClient.authorize();
-        console.log(token)
         return token.access_token;
     } catch (error) {
         return 0;
@@ -69,9 +69,9 @@ export const getMessage = async (messageName: string) => {
     }
 }
 
-export const createMessage = async (message: string, members: MemberInfoDto[], spaceName: string, threadId: string) => {
+export const createMessage = async (notification: NotificationEntity, members: MemberInfoDto[], spaceName: string) => {
     const date = moment(new Date()).utcOffset('+0700').format('DD-MM');
-    let messageWithTag = message.replace('{date}', date);
+    let messageWithTag = notification.content.replace('{date}', date);
     for (let member of members) {
         if (member.name == 'all') {
             messageWithTag = messageWithTag.replace('@all', '<users/all>')
@@ -81,7 +81,7 @@ export const createMessage = async (message: string, members: MemberInfoDto[], s
     const data = {
         text: messageWithTag,
         thread: {
-            name: threadId == '' ? null : threadId
+            name: notification.threadId == '' ? null : notification.threadId
         }
     }
     try {
@@ -97,8 +97,8 @@ export const createMessage = async (message: string, members: MemberInfoDto[], s
     }
 }
 
-export const createMessageForReminderNotification = async (message: string, members: MemberInfoDto[], allTaggedMember: MemberInfoDto[], spaceName: string, threadId: string) => {
-    let messageWithTag = message;
+export const createMessageForReminderNotification = async (notification: NotificationEntity, members: MemberInfoDto[], allTaggedMember: MemberInfoDto[], spaceName: string) => {
+    let messageWithTag = notification.content;
     for (let member of members) {
         messageWithTag = messageWithTag.replace(`@${member.displayName}`, `<${member.name}>`);
     }
@@ -108,7 +108,7 @@ export const createMessageForReminderNotification = async (message: string, memb
     const data = {
         text: messageWithTag,
         thread: {
-            name: threadId
+            name: notification.threadId
         }
     }
     try {

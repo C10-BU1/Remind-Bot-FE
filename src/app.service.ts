@@ -11,8 +11,9 @@ import { TaggedMemberService } from './modules/tagged-member/tagged-member.servi
 import { NotificationType } from './common/notification-type/notification-type';
 import { ReceivedMessageService } from './modules/received-message/received-message.service';
 import { MemberInfoDto } from './modules/member/dto/member-info.dto';
-import console from 'console';
-
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { CronJob, CronTime } from 'cron';
+import * as moment from 'moment';
 config()
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -24,22 +25,14 @@ export class AppService implements OnModuleInit {
     @Inject(forwardRef(() => NotificationService)) private notificationService: NotificationService,
     @Inject(forwardRef(() => TaggedMemberService)) private taggedMemberService: TaggedMemberService,
     @Inject(forwardRef(() => ReceivedMessageService)) private receivedMessageService: ReceivedMessageService,
+    private schedulerRegistry: SchedulerRegistry,
   ) { }
   async onModuleInit() {
-    const spaces = await this.spaceService.getSpaces();
-    for (let space of spaces) {
-      if (space.isEnable) {
-        const notifications = await this.notificationService.getNotificationBySpace(space);
-        for (let notification of notifications) {
-          const taggedMember = await this.taggedMemberService.getTaggedMember(notification.id);
-          if (notification.type == NotificationType.NORMAL) {
-            this.notificationService.addCronJobForNormalNotification(space.name, notification, taggedMember);
-          } else {
-            this.notificationService.addCronJobForReminderNotification(space.name, notification, taggedMember);
-          }
-        }
-      }
-    }
+    const job = new CronJob(`0 */1 * * * *`, () => {
+      this.notificationService.addNotifications();
+    });
+    this.schedulerRegistry.addCronJob('notification', job);
+    job.start();
   }
 
   async handleEvents(body: any) {
@@ -68,7 +61,7 @@ export class AppService implements OnModuleInit {
           await this.addMemberToSpace(space, member.member.displayName, member.member.name, MemberRole.MEMBER);
         }
       }
-      return { text: `Thank for adding me to space ${data['space']['displayName']}` };
+      return { text: `Vivu hiện đã active trong space. Truy cập https://remindbot.tk để cài đặt thông báo` };
     }
   }
 

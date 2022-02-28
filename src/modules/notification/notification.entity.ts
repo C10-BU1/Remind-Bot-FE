@@ -22,17 +22,11 @@ export class NotificationEntity {
     @Column({ name: 'is_enable', type: 'boolean', nullable: false })
     isEnable: boolean;
 
-    @Column({ name: 'send_at_minute', type: 'varchar', nullable: false })
-    sendAtMinute: string;
-
     @Column({ name: 'send_at_hour', type: 'varchar', nullable: false })
     sendAtHour: string;
 
     @Column({ name: 'send_at_day_of_week', type: 'varchar', nullable: false })
     sendAtDayOfWeek: string;
-
-    @Column({ name: 'send_at_months', type: 'varchar', nullable: true })
-    sendAtMonths: string;
 
     @Column({ name: 'send_at_day_of_month', type: 'varchar', nullable: true })
     sendAtDayOfMonth: string;
