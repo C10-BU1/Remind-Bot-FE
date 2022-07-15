@@ -83,11 +83,9 @@ export class AppService implements OnModuleInit {
         await this.memberService.updateMember(memberInfo, member);
       }
       return { text: `<${data.user.name}> cập nhật thành công` };
-    }
-    else if (message == 'thread') {
+    } else if (message == 'thread') {
       return { text: `ThreadID của thread này là: ${data.message.thread.name}` };
-    }
-    else {
+    } else {
       const threadId = data.message.thread.name;
       const notification = await this.notificationService.checkThreadId(threadId);
       if (notification != null) {
@@ -98,8 +96,7 @@ export class AppService implements OnModuleInit {
         } else {
           await this.receivedMessageService.updateMessageName(receivedMessageEntity, data.message.name);
         }
-      }
-      else{
+      } else {
         let url = `https://api-sv2.simsimi.net/v2/?text=${message}&lc=vn&cf=false`;
         let a = await axios.get(encodeURI(url))
           .then(function (response) {
@@ -113,11 +110,10 @@ export class AppService implements OnModuleInit {
             console.log("------------" + error + "-----------error-");
           }
         );
-
+        console.log("-------output----------");
+        console.log(a);
+        console.log("---------end output--------");
         return a;
-
-        
-
       }
     }
   }
