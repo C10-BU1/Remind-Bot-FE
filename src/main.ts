@@ -5,11 +5,9 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   // app.enableCors();
-  app.enableCors({
-    origin: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
+  app.use(cors({
+    origin: '*'
+  }));
 
   const config = new DocumentBuilder()
     .setTitle('Chat bot VMO')
